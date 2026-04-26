@@ -18,15 +18,18 @@ $captcha_input = strtoupper(trim($_POST['captcha'] ?? ''));
 // Simpan username terakhir untuk ditampilkan kembali jika gagal
 $_SESSION['last_username'] = $username;
 
-// Validasi captcha terlebih dahulu
-if (!isset($_SESSION['captcha']) || $captcha_input !== $_SESSION['captcha']) {
+// Ambil captcha dari session
+$captcha_stored = isset($_SESSION['captcha']) ? $_SESSION['captcha'] : '';
+
+// Hapus captcha dari session (agar tidak bisa dipakai ulang)
+unset($_SESSION['captcha']);
+
+// Validasi captcha
+if (empty($captcha_stored) || $captcha_input !== $captcha_stored) {
     $_SESSION['login_error'] = 'LOGIN GAGAL - Security Image tidak sesuai!';
     header('Location: index.php');
     exit;
 }
-
-// Hapus captcha yang sudah dipakai
-unset($_SESSION['captcha']);
 
 // Validasi input
 if (empty($username) || empty($password)) {
@@ -62,7 +65,7 @@ if (count($result) > 0) {
     }
 }
 
-// LOGIN GAGAL
+// LOGIN GAGAL - username atau password salah
 $_SESSION['login_error'] = 'LOGIN GAGAL';
 header('Location: index.php');
 exit;

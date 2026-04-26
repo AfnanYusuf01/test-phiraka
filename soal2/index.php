@@ -23,6 +23,16 @@ if (isset($_SESSION['login_success'])) {
     $success = $_SESSION['login_success'];
     unset($_SESSION['login_success']);
 }
+
+$last_username = isset($_SESSION['last_username']) ? $_SESSION['last_username'] : '';
+
+// Generate captcha langsung di sini dan simpan di session
+$characters = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+$captcha_text = '';
+for ($i = 0; $i < 5; $i++) {
+    $captcha_text .= $characters[rand(0, strlen($characters) - 1)];
+}
+$_SESSION['captcha'] = $captcha_text;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -68,9 +78,19 @@ if (isset($_SESSION['login_success'])) {
             border: 1px solid #999;
             font-size: 14px;
         }
-        .captcha-img {
-            border: 1px solid #999;
-            margin-bottom: 5px;
+        .captcha-display {
+            border-bottom: 2px solid #333;
+            padding: 10px 5px;
+            display: flex;
+            gap: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 5px;
+            user-select: none;
+        }
+        .captcha-display span {
+            display: inline-block;
         }
         button {
             padding: 8px 30px;
@@ -84,7 +104,6 @@ if (isset($_SESSION['login_success'])) {
         button:hover { background: #d0d0d0; }
         .error { color: red; font-weight: bold; margin: 10px 0; text-align: center; }
         .success { color: green; font-weight: bold; margin: 10px 0; text-align: center; }
-        a { color: #333; text-decoration: underline; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -102,7 +121,7 @@ if (isset($_SESSION['login_success'])) {
             <div class="form-group">
                 <label>Nama</label>
                 <input type="text" name="username" required maxlength="128"
-                       value="<?php echo isset($_SESSION['last_username']) ? htmlspecialchars($_SESSION['last_username']) : ''; ?>">
+                       value="<?php echo htmlspecialchars($last_username); ?>">
             </div>
             <div class="form-group">
                 <label>Password</label>
@@ -110,14 +129,17 @@ if (isset($_SESSION['login_success'])) {
             </div>
             <div class="form-group">
                 <label>Security Image</label>
-                <div>
-                    <img src="captcha.php?<?php echo time(); ?>" alt="Security Image" class="captcha-img"><br>
-                    <a href="javascript:void(0)" onclick="document.querySelector('.captcha-img').src='captcha.php?'+Date.now();">Refresh Captcha</a>
+                <div class="captcha-display">
+                    <?php for ($i = 0; $i < strlen($captcha_text); $i++): ?>
+                        <span><?php echo $captcha_text[$i]; ?></span>
+                    <?php endfor; ?>
                 </div>
             </div>
             <div class="form-group">
                 <label>Input karakter yang muncul pada tampilan diatas</label>
-                <input type="text" name="captcha" required maxlength="5">
+                <input type="text" name="captcha" required maxlength="5"
+                       style="text-transform: uppercase;"
+                       autocomplete="off">
             </div>
             <button type="submit">Submit</button>
         </form>
